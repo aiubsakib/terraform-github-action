@@ -38,18 +38,3 @@ resource "azurerm_subnet" "subnet" {
   address_prefix       = "192.168.0.0/24"
 }
   
-Notice the reference of the backend? This is where the .tfstate file will be stored
-
-1
-2
-3
-4
-5
-6
-backend "azurerm" {
-  resource_group_name  = "tamopstfstates"
-  storage_account_name = "tfstatedevops"
-  container_name       = "terraformgithubexample"
-  key                  = "terraformgithubexample.tfstate"
-}
-
