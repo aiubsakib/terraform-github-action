@@ -1,37 +1,55 @@
-
-
-# Configure the Microsoft Azure Provider
+terraform {
+  backend "azurerm" {
+    resource_group_name  = "tamopstfstates"
+    storage_account_name = "tfstatedevops"
+    container_name       = "terraformgithubexample"
+    key                  = "terraformgithubexample.tfstate"
+  }
+}
+ 
 provider "azurerm" {
-   version = "~> 2.29.0" 
+  # The "feature" block is required for AzureRM provider 2.x.
+  # If you're using version 1.x, the "features" block is not allowed.
+  version = "~>2.0"
   features {}
 }
-
-resource "azurerm_resource_group" "rg" {
-  name     = var.appservicename
-  location = var.location
-}
-
-resource "azurerm_app_service_plan" "appplan" {
-  name = "sakib-appserviceplan"
-  location = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  sku {
-    size = "S1"
-    tier = "Standard"
-  }
  
+data "azurerm_client_config" "current" {}
+ 
+#Create Resource Group
+resource "azurerm_resource_group" "tamops" {
+  name     = "tamops"
+  location = "eastus2"
 }
+ 
+#Create Virtual Network
+resource "azurerm_virtual_network" "vnet" {
+  name                = "tamops-vnet"
+  address_space       = ["192.168.0.0/16"]
+  location            = "eastus2"
+  resource_group_name = azurerm_resource_group.tamops.name
+}
+ 
+# Create Subnet
+resource "azurerm_subnet" "subnet" {
+  name                 = "subnet"
+  resource_group_name  = azurerm_resource_group.tamops.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  address_prefix       = "192.168.0.0/24"
+}
+  
+Notice the reference of the backend? This is where the .tfstate file will be stored
 
-resource "azurerm_app_service" "appservice" {
-  name = "sakib-appservice"
-  location = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  app_service_plan_id = azurerm_app_service_plan.appplan.id
-   https_only            = true
-  site_config { 
-    dotnet_framework_version = "v4.0"
-    remote_debugging_enabled = true
-    remote_debugging_version = "VS2019"
-}
+1
+2
+3
+4
+5
+6
+backend "azurerm" {
+  resource_group_name  = "tamopstfstates"
+  storage_account_name = "tfstatedevops"
+  container_name       = "terraformgithubexample"
+  key                  = "terraformgithubexample.tfstate"
 }
 
